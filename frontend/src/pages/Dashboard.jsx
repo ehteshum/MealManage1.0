@@ -113,7 +113,7 @@ export default function Dashboard() {
 
   // remove visibility warning logic
 
-  function StatCard({ title, value, Icon, color }) {
+  function StatCard({ title, value, Icon, color, imgSrc, imgAlt = 'icon' }) {
     return (
       <div className="rounded-xl bg-white dark:bg-gray-900 p-5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
         <div className="flex items-center justify-between">
@@ -121,9 +121,13 @@ export default function Dashboard() {
             <div className="text-sm text-gray-500 dark:text-gray-400">{title}</div>
             <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</div>
           </div>
-          <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${color} text-white`}>
-            <Icon className="h-6 w-6" />
-          </div>
+          {imgSrc ? (
+            <img src={imgSrc} alt={imgAlt} className="w-12 h-12 object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo192.png'; }} />
+          ) : (
+            <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${color} text-white`}>
+              <Icon className="h-6 w-6" />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -167,11 +171,11 @@ export default function Dashboard() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <StatCard title="Total Meals" value={totalMeals} Icon={MealIcon} color="bg-blue-600" />
-        <StatCard title="Total Deposits" value={`${totalDeposits.toFixed(2)} taka`} Icon={DepositIcon} color="bg-indigo-600" />
-        <StatCard title="Meal Rate" value={allTimeStats.totalMealsAll ? `${mealRate.toFixed(2)} taka` : '—'} Icon={MealIcon} color="bg-cyan-600" />
-  <StatCard title="Your Remaining Balance" value={`${netBalance >= 0 ? '' : '-'}${Math.abs(netBalance).toFixed(2)} taka`} Icon={BalanceIcon} color="bg-amber-600" />
-        <StatCard title="Meal Box Remaining Cash" value={`${poolRemaining >= 0 ? '' : '-'}${Math.abs(poolRemaining).toFixed(2)} taka`} Icon={BalanceIcon} color="bg-teal-600" />
+  <StatCard title="Total Meals" value={totalMeals} imgSrc="/icons/fried-rice (1).png" imgAlt="Total meals" />
+  <StatCard title="Total Deposits" value={`${totalDeposits.toFixed(2)} taka`} imgSrc="/icons/output-onlinepngtools.png" imgAlt="Total deposits" />
+  <StatCard title="Meal Rate" value={allTimeStats.totalMealsAll ? `${mealRate.toFixed(2)} taka` : '—'} imgSrc="/icons/interest-rate (1).png" imgAlt="Meal rate" />
+  <StatCard title="Your Remaining Balance" value={`${netBalance >= 0 ? '' : '-'}${Math.abs(netBalance).toFixed(2)} taka`} imgSrc="/icons/balancing-scale (1).png" imgAlt="Your remaining balance" />
+  <StatCard title="Meal Box Remaining Cash" value={`${poolRemaining >= 0 ? '' : '-'}${Math.abs(poolRemaining).toFixed(2)} taka`} imgSrc="/icons/safe-box.png" imgAlt="Meal box safe" />
       </div>
 
       {/* Recent Activity Table */}

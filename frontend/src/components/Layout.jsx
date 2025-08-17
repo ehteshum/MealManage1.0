@@ -3,6 +3,18 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
+// Small inline icons
+const SunIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zM1 13h3v-2H1v2zm9-9h2V1h-2v3zm7.04 1.21l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM17 13h3v-2h-3v2zm-5 8h2v-3h-2v3zM4.96 18.79l-1.79 1.8 1.41 1.41 1.8-1.79-1.42-1.42zM20 20.99l1.41-1.41-1.8-1.79-1.41 1.41 1.8 1.79zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
+  </svg>
+);
+const MoonIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M12.74 2.27a1 1 0 00-1.63.77 8 8 0 109.85 9.85 1 1 0 00-.77-1.63 6 6 0 01-7.45-7.45z"/>
+  </svg>
+);
+
 export default function Layout() {
   const { user, member, signOut } = useAuth();
   const [dark, setDark] = useState(() => {
@@ -31,6 +43,7 @@ export default function Layout() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const name = member?.name || user?.user_metadata?.name || '';
@@ -91,7 +104,7 @@ export default function Layout() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-6">
-              <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">Meal Manager</span>
+              <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">Meal Manage</span>
               <div className="hidden md:flex items-center gap-2">
                 <NavLink to="/" end className={navLinkClass}>Dashboard</NavLink>
                 <NavLink to="/meals" className={navLinkClass}>Meals</NavLink>
@@ -99,33 +112,96 @@ export default function Layout() {
                 <NavLink to="/deposits" className={navLinkClass}>Deposits</NavLink>
                 <NavLink to="/members" className={navLinkClass}>Members</NavLink>
                 <NavLink to="/reports" className={navLinkClass}>Reports</NavLink>
+                <NavLink to="/meal-chart" className={navLinkClass}>Meal Chart</NavLink>
                 {user && <NavLink to="/admin/cleanup" className={navLinkClass}>Admin</NavLink>}
                 {!user && <NavLink to="/login" className={navLinkClass}>Login</NavLink>}
                 {!user && <NavLink to="/signup" className={navLinkClass}>Signup</NavLink>}
               </div>
             </div>
+            {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-3">
               <button
                 onClick={() => setDark(d => !d)}
                 aria-label="Toggle dark mode"
-                className="px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700"
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {dark ? 'Light' : 'Dark'}
+                {dark ? <SunIcon className="h-5 w-5"/> : <MoonIcon className="h-5 w-5"/>}
               </button>
               {user && (
                 <>
-                  <button onClick={openProfile} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                    {displayName || user.email}
+                  <button
+                    onClick={openProfile}
+                    className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm hover:shadow transition-shadow"
+                    title="View profile"
+                  >
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+                      {(displayName || user.email || 'U').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[12rem]">{displayName || user.email}</span>
                   </button>
                   <button onClick={signOut}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-800 text-white hover:bg-gray-700">
+                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800">
                     Logout
                   </button>
                 </>
               )}
             </div>
+            {/* Mobile hamburger */}
+            <div className="md:hidden flex items-center gap-2">
+              <button
+                onClick={() => setDark(d => !d)}
+                aria-label="Toggle dark mode"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700"
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {dark ? <SunIcon className="h-5 w-5"/> : <MoonIcon className="h-5 w-5"/>}
+              </button>
+              <button
+                onClick={() => setMobileOpen(o => !o)}
+                aria-label="Toggle menu"
+                className="px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+              >
+                {mobileOpen ? 'Close' : 'Menu'}
+              </button>
+            </div>
           </div>
         </div>
+        {/* Mobile menu drawer */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+            <div className="mx-auto max-w-7xl px-4 py-3 flex flex-col gap-2">
+              <NavLink to="/" end className={navLinkClass} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
+              <NavLink to="/meals" className={navLinkClass} onClick={() => setMobileOpen(false)}>Meals</NavLink>
+              <NavLink to="/bazar" className={navLinkClass} onClick={() => setMobileOpen(false)}>Bazar</NavLink>
+              <NavLink to="/deposits" className={navLinkClass} onClick={() => setMobileOpen(false)}>Deposits</NavLink>
+              <NavLink to="/members" className={navLinkClass} onClick={() => setMobileOpen(false)}>Members</NavLink>
+              <NavLink to="/reports" className={navLinkClass} onClick={() => setMobileOpen(false)}>Reports</NavLink>
+              <NavLink to="/meal-chart" className={navLinkClass} onClick={() => setMobileOpen(false)}>Meal Chart</NavLink>
+              {user && <NavLink to="/admin/cleanup" className={navLinkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>}
+              {!user && <NavLink to="/login" className={navLinkClass} onClick={() => setMobileOpen(false)}>Login</NavLink>}
+              {!user && <NavLink to="/signup" className={navLinkClass} onClick={() => setMobileOpen(false)}>Signup</NavLink>}
+              {user && (
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={() => { openProfile(); setMobileOpen(false); }}
+                    className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 shadow-sm hover:shadow transition-shadow"
+                    title="View profile"
+                  >
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+                      {(displayName || user.email || 'U').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[10rem]">{displayName || user.email}</span>
+                  </button>
+                  <button onClick={() => { setMobileOpen(false); signOut(); }}
+                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800">
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
       <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
         <Outlet />

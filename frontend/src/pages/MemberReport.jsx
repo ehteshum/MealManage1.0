@@ -93,7 +93,7 @@ export default function MemberReport() {
   <StatCard label="Remaining Balance" value={`${stats.myNet.toFixed(2)} taka`} highlight={true} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
   <Panel title="My Bazar">
           <SimpleTable
             columns={[
@@ -146,7 +146,7 @@ function Panel({ title, children }) {
       <div className="px-4 py-3 border-b">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
       </div>
-      <div className="p-4 overflow-x-auto">
+  <div className="p-4 overflow-x-auto">
         {children}
       </div>
     </div>

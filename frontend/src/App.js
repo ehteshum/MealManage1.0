@@ -9,6 +9,7 @@ import Members from './pages/Members';
 import MemberReport from './pages/MemberReport';
 import Reports from './pages/Reports';
 import AdminCleanup from './pages/AdminCleanup';
+import MealChart from './pages/MealChart';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AuthCallback from './pages/AuthCallback';
@@ -27,6 +28,7 @@ export default function App() {
   <Route path="members" element={<Members />} />
   <Route path="members/:id" element={<MemberReport />} />
   <Route path="reports" element={<Reports />} />
+  <Route path="meal-chart" element={<MealChart />} />
   <Route path="admin/cleanup" element={<AdminCleanup />} />
       </Route>
     </Routes>

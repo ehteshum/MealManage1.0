@@ -36,3 +36,39 @@ export function dateToInputValueInTZ(date = new Date(), tz = 'Asia/Dhaka') {
 export function todayISOInTZ(tz = 'Asia/Dhaka') {
   return dateToInputValueInTZ(new Date(), tz);
 }
+
+// Format a timestamp into h:mm a in a specific timezone (default Asia/Dhaka)
+export function formatTimeInTZ(iso, tz = 'Asia/Dhaka') {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(d);
+  } catch {
+    return '';
+  }
+}
+
+// Check if a timestamp is after a given hour (24h) in a specific timezone
+export function isAfterHourInTZ(iso, hour24 = 18, tz = 'Asia/Dhaka') {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return false;
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: tz,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(d);
+    const hh = Number(parts.find(p => p.type === 'hour')?.value || '00');
+  const mm = Number(parts.find(p => p.type === 'minute')?.value || '00');
+  // After 18:00 means > 18:00 (not including exactly 18:00)
+  return hh > hour24 || (hh === hour24 && mm > 0);
+  } catch {
+    return false;
+  }
+}

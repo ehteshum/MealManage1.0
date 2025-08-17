@@ -157,11 +157,11 @@ export default function Reports() {
   {/* Personal debit/credit removed: reports show global/all members only */}
 
   {/* Bazar list (all members) */}
-      <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+  <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
         <div className="flex items-center justify-between p-4 border-b">
   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar List (All Members)</h2>
         </div>
-        <div className="overflow-x-auto">
+  <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
     <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
@@ -201,7 +201,7 @@ export default function Reports() {
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count (All Members)</h2>
         </div>
-        <div className="overflow-x-auto">
+  <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
@@ -235,7 +235,7 @@ export default function Reports() {
         <div className="flex items-center justify-between p-4 border-b">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits (All Members)</h2>
         </div>
-        <div className="overflow-x-auto">
+  <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
     <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>

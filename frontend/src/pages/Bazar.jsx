@@ -242,7 +242,8 @@ export default function Bazar() {
   {error && (<div className="mt-3 text-sm text-red-600">{error}</div>)}
 
   <h3 className="text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-gray-100">Recent Bazar</h3>
-  <table className="w-full table-auto border dark:border-gray-800">
+  <div className="overflow-x-auto">
+  <table className="min-w-full table-auto border dark:border-gray-800">
         <thead>
           <tr>
     <th className="border px-2 dark:border-gray-800 text-gray-700 dark:text-gray-300">Date</th>
@@ -344,7 +345,8 @@ export default function Bazar() {
             </tr>
           ))}
         </tbody>
-      </table>
+  </table>
+  </div>
     </div>
   );
 }
