@@ -181,7 +181,16 @@ export default function Reports() {
     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {bazarM
                 .slice()
-                .sort((a,b) => new Date(b.date) - new Date(a.date))
+                .sort((a, b) => {
+                  const ta = a?.date ? new Date(a.date).getTime() : 0;
+                  const tb = b?.date ? new Date(b.date).getTime() : 0;
+                  if (ta !== tb) return ta - tb; // ascending by date/time
+                  // stable fallback by id
+                  const ai = typeof a.id === 'number' ? a.id : String(a.id);
+                  const bi = typeof b.id === 'number' ? b.id : String(b.id);
+                  if (typeof ai === 'number' && typeof bi === 'number') return ai - bi;
+                  return String(ai).localeCompare(String(bi));
+                })
                 .map((row) => (
         <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
@@ -246,7 +255,16 @@ export default function Reports() {
     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {depositsM
                 .slice()
-                .sort((a,b) => new Date(b.date) - new Date(a.date))
+                .sort((a, b) => {
+                  const ta = a?.date ? new Date(a.date).getTime() : 0;
+                  const tb = b?.date ? new Date(b.date).getTime() : 0;
+                  if (ta !== tb) return ta - tb; // ascending by date/time
+                  // stable fallback by id
+                  const ai = typeof a.id === 'number' ? a.id : String(a.id);
+                  const bi = typeof b.id === 'number' ? b.id : String(b.id);
+                  if (typeof ai === 'number' && typeof bi === 'number') return ai - bi;
+                  return String(ai).localeCompare(String(bi));
+                })
                 .map((row) => (
         <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
