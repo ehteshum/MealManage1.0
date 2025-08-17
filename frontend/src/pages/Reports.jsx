@@ -18,8 +18,6 @@ export default function Reports() {
   const [bazar, setBazar] = useState([]);
   const [deposits, setDeposits] = useState([]);
   const [error, setError] = useState('');
-  const [membersCount, setMembersCount] = useState(1);
-  const [usedRPC, setUsedRPC] = useState(false);
   const [globalTotals, setGlobalTotals] = useState({ meals: 0, bazar: 0, deposits: 0, mealRate: 0 });
   const [monthTotalBazar, setMonthTotalBazar] = useState(0);
 
@@ -36,7 +34,7 @@ export default function Reports() {
         fetchGlobalAggregates(supabase),
       ]);
       if (!active) return;
-      const err = membersRes.error || mealsRes.error || bazarRes.error || depRes.error;
+  const err = membersRes.error || mealsRes.error || bazarRes.error || depRes.error;
       if (err) {
         setError(err.message);
         setMembers([]); setMeals([]); setBazar([]); setDeposits([]);
@@ -45,8 +43,6 @@ export default function Reports() {
         setMeals(mealsRes.data || []);
         setBazar(bazarRes.data || []);
         setDeposits(depRes.data || []);
-  setMembersCount(globalAgg.totalMembersAll || 1);
-  setUsedRPC(!!globalAgg.usedRPC);
         setGlobalTotals({
           meals: globalAgg.totalMealsAll || 0,
           bazar: globalAgg.totalBazarAll || 0,
@@ -137,7 +133,7 @@ export default function Reports() {
     }).sort((a,b) => a.name.localeCompare(b.name));
   }, [members, mealsByMember, depositsByMember, globalTotals.mealRate]);
 
-  const rlsLimited = !usedRPC && ((membersCount <= 1) || (members.length <= 1));
+  
 
   return (
     <div className="space-y-6">
@@ -148,11 +144,7 @@ export default function Reports() {
 
       {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
-      {rlsLimited && (
-        <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200">
-          Heads up: These totals are based on the data your account can access. If row‑level security limits reads, different users may see different numbers. Consider relaxed read policies or a server-side aggregate if a global view is required.
-        </div>
-      )}
+      
 
     {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
