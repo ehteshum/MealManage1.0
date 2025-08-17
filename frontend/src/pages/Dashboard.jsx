@@ -15,23 +15,6 @@ import { supabase } from '../lib/supabaseClient';
 import { fetchGlobalAggregates } from '../lib/aggregates';
 import { formatDateWithDay } from '../lib/formatters';
 
-
-const MealIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M4 3h2v8a2 2 0 1 1-4 0V3h2zm6 0h2v8a2 2 0 1 1-4 0V3h2zm8 0h2v8a2 2 0 1 1-4 0V3h2zM3 19a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1z"/>
-  </svg>
-);
-const DepositIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M12 3l7 4v10l-7 4-7-4V7l7-4zm0 2.3L7 7.7v8.6l5 2.9 5-2.9V7.7l-5-2.4z"/>
-  </svg>
-);
-const BalanceIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M12 1l9 4-9 4-9-4 9-4zm-7 7l7 3 7-3v6a7 7 0 1 1-14 0V8z"/>
-  </svg>
-);
-
 export default function Dashboard() {
   const { user, member } = useAuth();
   const [meals, setMeals] = useState([]);
