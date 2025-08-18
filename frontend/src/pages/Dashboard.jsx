@@ -13,7 +13,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { fetchGlobalAggregates } from '../lib/aggregates';
-import { formatDateWithDay } from '../lib/formatters';
+import { formatDateWithDay, formatTimeInTZ } from '../lib/formatters';
 
 export default function Dashboard() {
   const { user, member } = useAuth();
@@ -116,31 +116,29 @@ export default function Dashboard() {
     );
   }
 
-  const recent = useMemo(() => {
-    const items = [];
-      for (const m of meals) {
-        items.push({
-          date: m.date,
-        mealCount: m.meal_count,
-        item: '-',
-        cost: '-',
-      });
-    }
-    for (const b of bazar) {
-        items.push({
-          date: b.date,
-        mealCount: '-',
-        item: b.item_name ?? b.item ?? b.name ?? '—',
-        cost: Number(b.cost) || 0,
-      });
-    }
-    return items
-      .filter(r => r.date)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 10);
-  }, [meals, bazar]);
+  // Removed recent activity aggregator; replaced by weekly plan and notice board.
 
   const displayName = member?.name || user?.email || 'Guest';
+
+  // Weekly plan current-day highlight (client local time)
+  const daysHeaders = ['DAY','SATURDAY','SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY'];
+  const todayHeader = useMemo(() => {
+    const d = new Date().getDay(); // 0=Sun ... 6=Sat
+    switch (d) {
+      case 0: return 'SUNDAY';
+      case 1: return 'MONDAY';
+      case 2: return 'TUESDAY';
+      case 3: return 'WEDNESDAY';
+      case 4: return 'THURSDAY';
+      case 5: return 'FRIDAY';
+      case 6: return 'SATURDAY';
+      default: return '';
+    }
+  }, []);
+  const highlightIndex = useMemo(() => daysHeaders.indexOf(todayHeader), [todayHeader]);
+  const tdBase = "px-3 py-2 text-sm text-gray-700 dark:text-gray-300";
+  const thRowBase = "px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 text-left";
+  const hiNameOnly = (idx) => (idx === highlightIndex ? ' bg-yellow-50 dark:bg-yellow-900/20 font-semibold ring-1 ring-yellow-200 dark:ring-yellow-800' : '');
 
   return (
     <div className="space-y-6">
@@ -161,31 +159,184 @@ export default function Dashboard() {
   <StatCard title="Meal Box Remaining Cash" value={`${poolRemaining >= 0 ? '' : '-'}${Math.abs(poolRemaining).toFixed(2)} taka`} imgSrc="/icons/safe-box.png" imgAlt="Meal box safe" />
       </div>
 
-      {/* Recent Activity Table */}
-      <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                {['Date','Meal Count','Item','Cost'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {recent.map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{row.mealCount}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{row.item}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{typeof row.cost === 'number' ? `${row.cost.toFixed(2)} taka` : row.cost}</td>
+      {/* Weekly Plan + Notice Board */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Left: Weekly Plan Table */}
+        <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 lg:col-span-2">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Weekly Plan</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  {daysHeaders.map((h) => (
+                    <th key={h} className={"px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <th className={thRowBase}>LUNCH</th>
+                  <td className={tdBase}>FISH</td>
+                  <td className={tdBase}>VEGETABLE + BHORTA</td>
+                  <td className={tdBase}>CHICKEN</td>
+                  <td className={tdBase}>FISH</td>
+                  <td className={tdBase}>CHICKEN</td>
+                  <td className={tdBase}>FISH</td>
+                  <td className={tdBase}>CHICKEN</td>
+                </tr>
+                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <th className={thRowBase}>DINNER</th>
+                  <td className={tdBase}>EGG + BHORTA</td>
+                  <td className={tdBase}>CHICKEN</td>
+                  <td className={tdBase}>FISH</td>
+                  <td className={tdBase}>CHICKEN</td>
+                  <td className={tdBase}>FISH + VEGETABLE</td>
+                  <td className={tdBase}>CHICKEN</td>
+                  <td className={tdBase}>FISH + VEGETABLE</td>
+                </tr>
+                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <th className={thRowBase}>NAME</th>
+                  <td className={`${tdBase}${hiNameOnly(1)}`}>MAMUN</td>
+                  <td className={`${tdBase}${hiNameOnly(2)}`}>JEATH</td>
+                  <td className={`${tdBase}${hiNameOnly(3)}`}>MAHARAJ</td>
+                  <td className={`${tdBase}${hiNameOnly(4)}`}>ISHMAM</td>
+                  <td className={`${tdBase}${hiNameOnly(5)}`}>SHOYEB</td>
+                  <td className={`${tdBase}${hiNameOnly(6)}`}>KANIK</td>
+                  <td className={`${tdBase}${hiNameOnly(7)}`}>MAHFUJ</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Right: Notice Board */}
+        <div className="lg:col-span-1">
+          <NoticeBoard postedBy={displayName} memberId={member?.id} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Simple notice board with local storage persistence
+function NoticeBoard({ postedBy, memberId }) {
+  const [noticeText, setNoticeText] = useState('');
+  const [notices, setNotices] = useState([]);
+  const [error, setError] = useState('');
+  const [missingTable, setMissingTable] = useState(false);
+
+  const fetchNotices = async () => {
+    setError('');
+    try {
+      const { data, error: err } = await supabase
+        .from('notices')
+        .select('id, text, created_at, name, member_id')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (err) {
+        if ((err.message || '').toLowerCase().includes('relation') || (err.message || '').toLowerCase().includes('not exist')) {
+          setMissingTable(true);
+          setNotices([]);
+          return;
+        }
+        throw err;
+      }
+      setNotices(data || []);
+    } catch (e) {
+      setError(e.message || 'Failed to load notices');
+      setNotices([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotices();
+    const channel = supabase
+      .channel('notices-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, () => {
+        fetchNotices();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const addNotice = async () => {
+    const text = (noticeText || '').trim();
+    if (!text) return;
+    setError('');
+    try {
+      const payload = { text, name: postedBy || 'Unknown' };
+      if (memberId) payload.member_id = memberId;
+      const { error: err } = await supabase.from('notices').insert(payload);
+      if (err) throw err;
+      setNoticeText('');
+      // fetchNotices will be triggered by realtime; also call once for immediate feedback
+      fetchNotices();
+    } catch (e) {
+      setError(e.message || 'Failed to post notice');
+    }
+  };
+
+  const clearAll = async () => {
+    try {
+      const { error: err } = await supabase.from('notices').delete().neq('id', 0);
+      if (err) throw err;
+      fetchNotices();
+    } catch (e) {
+      setError(e.message || 'Failed to clear notices');
+    }
+  };
+
+  return (
+    <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notice Board</h2>
+        {notices.length > 0 && (
+          <button onClick={clearAll} className="text-xs text-red-600 hover:underline">Clear all</button>
+        )}
+      </div>
+      <div className="p-4 space-y-3">
+        {missingTable && (
+          <div className="rounded-md bg-yellow-50 p-2 text-sm text-yellow-800">
+            Notice table not found. Create a table named "notices" with columns: id (uuid default gen_random_uuid or bigint), text (text), name (text), member_id, created_at (timestamptz default now()).
+          </div>
+        )}
+        {error && (
+          <div className="rounded-md bg-red-50 p-2 text-sm text-red-700">{error}</div>
+        )}
+        <div className="space-y-2">
+          <textarea
+            rows={3}
+            value={noticeText}
+            onChange={(e) => setNoticeText(e.target.value)}
+            placeholder="Write a notice..."
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
+          />
+          <div className="flex items-center justify-end">
+            <button onClick={addNotice} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Post Notice</button>
+          </div>
+        </div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          {notices.length === 0 && (
+            <div className="text-sm text-gray-500 dark:text-gray-400">No notices yet</div>
+          )}
+          {notices.map(n => {
+            const dateStr = n.date || '';
+            const created = n.created_at || n.date || '';
+            const dayStr = created ? formatDateWithDay(created.slice(0, 10)) : '';
+            const timeStr = created ? formatTimeInTZ(created, 'Asia/Dhaka') : '';
+            return (
+              <div key={n.id} className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{n.name || 'Unknown'}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{dayStr}{timeStr ? ` • ${timeStr}` : ''}</div>
+                </div>
+                <div className="mt-1 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{n.text}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
