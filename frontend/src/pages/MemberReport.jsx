@@ -62,13 +62,13 @@ export default function MemberReport() {
   }, [allMeals, allBazar, meals, deposits]);
 
   if (loading) {
-    return <div className="text-sm text-gray-600">Loading…</div>;
+    return <div className="text-sm text-gray-600 dark:text-gray-400">Loading…</div>;
   }
   if (error) {
-    return <div className="text-sm text-red-600">{error}</div>;
+    return <div className="text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">{error}</div>;
   }
   if (!member) {
-    return <div className="text-sm text-gray-600">Member not found.</div>;
+    return <div className="text-sm text-gray-600 dark:text-gray-400">Member not found.</div>;
   }
 
   return (
@@ -143,7 +143,7 @@ function StatCard({ label, value, highlight }) {
 function Panel({ title, children }) {
   return (
     <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-      <div className="px-4 py-3 border-b">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
       </div>
   <div className="p-4 overflow-x-auto">
@@ -168,7 +168,7 @@ function SimpleTable({ columns, rows, empty, format }) {
       </thead>
       <tbody>
         {rows.map((r) => (
-          <tr key={r.id} className="border-t">
+          <tr key={r.id} className="border-t border-gray-100 dark:border-gray-800">
             {columns.map((c, idx) => {
               const v = c.render ? c.render(r) : (c.k ? r[c.k] : undefined);
               const text = format ? format(c.k, v) : v;

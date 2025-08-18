@@ -138,11 +138,11 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
-        <p className="text-sm text-gray-600">All-time summary and details.</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">All-time summary and details.</p>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       
 
@@ -158,7 +158,7 @@ export default function Reports() {
 
   {/* Bazar list (all members) */}
   <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar List (All Members)</h2>
         </div>
   <div className="overflow-x-auto">
@@ -198,7 +198,7 @@ export default function Reports() {
 
       {/* Meal entries (all members) - pivot table: rows=dates, columns=members */}
       <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count (All Members)</h2>
         </div>
   <div className="overflow-x-auto">
@@ -232,7 +232,7 @@ export default function Reports() {
 
       {/* Deposits (all members) */}
       <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits (All Members)</h2>
         </div>
   <div className="overflow-x-auto">
@@ -271,7 +271,7 @@ export default function Reports() {
 
   {/* Ledger */}
   <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
           <div>
     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger (All Members)</h2>
     <p className="text-sm text-gray-600 dark:text-gray-400">Meal rate applies to everyone: {globalTotals.meals ? `${globalTotals.mealRate.toFixed(4)} taka` : '—'}</p>

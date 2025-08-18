@@ -131,7 +131,7 @@ export default function MealChart() {
         </div>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+  {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">

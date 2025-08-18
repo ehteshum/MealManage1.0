@@ -2,37 +2,15 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import Button from './ui/Button';
 
-// Small inline icons
-const SunIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zM1 13h3v-2H1v2zm9-9h2V1h-2v3zm7.04 1.21l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM17 13h3v-2h-3v2zm-5 8h2v-3h-2v3zM4.96 18.79l-1.79 1.8 1.41 1.41 1.8-1.79-1.42-1.42zM20 20.99l1.41-1.41-1.8-1.79-1.41 1.41 1.8 1.79zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
-  </svg>
-);
-const MoonIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M12.74 2.27a1 1 0 00-1.63.77 8 8 0 109.85 9.85 1 1 0 00-.77-1.63 6 6 0 01-7.45-7.45z"/>
-  </svg>
-);
+// Dark mode toggle hidden; icons removed
 
 export default function Layout() {
   const { user, member, signOut } = useAuth();
-  const [dark, setDark] = useState(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
-    return saved === 'dark';
-  });
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [dark]);
   const navLinkClass = ({ isActive }) =>
-    `px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100 ${
-      isActive ? 'bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+    `px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 hover:text-gray-900 ${
+      isActive ? 'bg-gray-200 text-gray-900' : 'text-gray-700'
     }`;
 
   // Profile modal state
@@ -120,14 +98,6 @@ export default function Layout() {
             </div>
             {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={() => setDark(d => !d)}
-                aria-label="Toggle dark mode"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700"
-                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {dark ? <SunIcon className="h-5 w-5"/> : <MoonIcon className="h-5 w-5"/>}
-              </button>
               {user && (
                 <>
                   <button
@@ -140,30 +110,13 @@ export default function Layout() {
                     </span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[12rem]">{displayName || user.email}</span>
                   </button>
-                  <button onClick={signOut}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800">
-                    Logout
-                  </button>
+                  <Button onClick={signOut} variant="secondary" size="md">Logout</Button>
                 </>
               )}
             </div>
             {/* Mobile hamburger */}
             <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={() => setDark(d => !d)}
-                aria-label="Toggle dark mode"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700"
-                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {dark ? <SunIcon className="h-5 w-5"/> : <MoonIcon className="h-5 w-5"/>}
-              </button>
-              <button
-                onClick={() => setMobileOpen(o => !o)}
-                aria-label="Toggle menu"
-                className="px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-              >
-                {mobileOpen ? 'Close' : 'Menu'}
-              </button>
+              <Button onClick={() => setMobileOpen(o => !o)} aria-label="Toggle menu" variant="outline" size="md">{mobileOpen ? 'Close' : 'Menu'}</Button>
             </div>
           </div>
         </div>
@@ -193,17 +146,14 @@ export default function Layout() {
                     </span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[10rem]">{displayName || user.email}</span>
                   </button>
-                  <button onClick={() => { setMobileOpen(false); signOut(); }}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800">
-                    Logout
-                  </button>
+                  <Button onClick={() => { setMobileOpen(false); signOut(); }} variant="secondary" size="md">Logout</Button>
                 </div>
               )}
             </div>
           </div>
         )}
       </nav>
-      <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+  <main className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-950">
         <Outlet />
       </main>
 
@@ -243,6 +193,7 @@ export default function Layout() {
                   className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100"
                 />
               </div>
+              {/* Theme selection removed as dark mode is disabled */}
               {profileMsg && (
                 <div className="text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300 px-3 py-2 rounded">
                   {profileMsg}
@@ -250,20 +201,8 @@ export default function Layout() {
               )}
             </div>
             <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-2">
-              <button
-                className="px-3 py-2 rounded-md text-sm font-medium bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                onClick={()=> setProfileOpen(false)}
-                disabled={savingProfile}
-              >
-                Cancel
-              </button>
-              <button
-                className={`px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 ${savingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
-                onClick={saveProfile}
-                disabled={savingProfile}
-              >
-                {savingProfile ? 'Saving…' : 'Save'}
-              </button>
+              <Button onClick={()=> setProfileOpen(false)} disabled={savingProfile} variant="outline" size="md">Cancel</Button>
+              <Button onClick={saveProfile} disabled={savingProfile} variant="primary" size="md">{savingProfile ? 'Saving…' : 'Save'}</Button>
             </div>
           </div>
         </div>

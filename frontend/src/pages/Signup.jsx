@@ -32,8 +32,8 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Create account</h1>
-  {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
-  {success && <div className="mt-3 text-sm text-green-600">{success}</div>}
+  {error && <div className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</div>}
+  {success && <div className="mt-3 text-sm text-green-600 dark:text-green-400">{success}</div>}
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300">Name</label>

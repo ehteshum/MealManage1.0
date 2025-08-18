@@ -47,7 +47,7 @@ export default function Login() {
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Login</h1>
         {error && (
-          <div className="mt-3 text-sm text-red-600">
+          <div className="mt-3 text-sm text-red-600 dark:text-red-400">
             {error}
             {String(error).toLowerCase().includes('confirm') && (
               <button type="button" onClick={resendVerification}
@@ -57,7 +57,7 @@ export default function Login() {
             )}
           </div>
         )}
-        {info && <div className="mt-3 text-sm text-green-600">{info}</div>}
+  {info && <div className="mt-3 text-sm text-green-600 dark:text-green-400">{info}</div>}
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300">Email</label>

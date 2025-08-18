@@ -163,11 +163,11 @@ export default function Dashboard() {
 
       {/* Recent Activity Table */}
       <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 {['Date','Meal Count','Item','Cost'].map((h) => (
@@ -175,7 +175,7 @@ export default function Dashboard() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {recent.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>

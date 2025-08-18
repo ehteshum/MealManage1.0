@@ -27,14 +27,14 @@ export default function Members() {
 
   return (
     <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Members</h2>
         <div className="text-sm text-gray-500 dark:text-gray-400">{loading ? 'Loading…' : `${members.length} total`}</div>
       </div>
-      {error && <div className="p-4 text-sm text-red-600">{error}</div>}
+      {error && <div className="p-4 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20">{error}</div>}
       <ul>
         {members.map((m) => (
-          <li key={m.id} className="flex items-center justify-between px-4 py-3 border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+          <li key={m.id} className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-semibold text-gray-700 dark:text-gray-300">
                 {(m.name || m.email || '?').slice(0,1).toUpperCase()}

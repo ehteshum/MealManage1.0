@@ -3,6 +3,8 @@ import { Input } from "@material-tailwind/react";
 import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
+import Button from '../components/ui/Button';
+import { EditIcon, TrashIcon } from '../components/ui/Icons';
 
 export default function Meals() {
   const { member } = useAuth();
@@ -137,12 +139,12 @@ export default function Meals() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Add Meals (Dinner + Lunch)</h2>
       {!member && (
-        <div className="mb-3 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+        <div className="mb-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-300">
           Your member profile isn’t ready yet. Please refresh after signup verification.
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+        <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Dinner</h3>
           <div className="mb-2">
             <label className="mr-2 text-gray-800 dark:text-gray-300">Date:</label>
@@ -156,7 +158,7 @@ export default function Meals() {
           <Input type="number" label="Dinner meals" value={dinnerCount} onChange={(e)=>setDinnerCount(e.target.value)} crossOrigin="anonymous"/>
         </div>
 
-        <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+  <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Lunch</h3>
           <div className="mb-2">
             <label className="mr-2 text-gray-800 dark:text-gray-300">Date:</label>
@@ -173,35 +175,34 @@ export default function Meals() {
       </div>
 
       <div className="mt-3">
-        <button
-          onClick={addMeal}
-          disabled={adding || !member}
-          className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${adding ? 'opacity-60 cursor-not-allowed' : ''}`}
-        >
+        <Button onClick={addMeal} disabled={adding || !member} variant="primary">
           {adding ? 'Adding...' : 'Add Meals'}
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <div className="mt-3 text-sm text-red-600">
+        <div className="mt-3 text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
 
-  <h3 className="text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-gray-100">Recent Meals</h3>
-  <div className="overflow-x-auto">
-  <table className="min-w-full table-auto border dark:border-gray-800">
-        <thead>
+  <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 mt-6">
+    <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Meals</h3>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-800">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-    <th className="border px-2 dark:border-gray-800 text-gray-700 dark:text-gray-300">Date</th>
-    <th className="border px-2 dark:border-gray-800 text-gray-700 dark:text-gray-300">Meal Count</th>
-    <th className="border px-2 dark:border-gray-800 text-gray-700 dark:text-gray-300">Actions</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Meal Count</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
           {meals.map((meal) => (
     <tr key={meal.id}>
-      <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+  <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
                 {editingId === meal.id ? (
                   <input
                     type="date"
@@ -213,53 +214,39 @@ export default function Meals() {
                   formatDateWithDay(meal.date)
                 )}
               </td>
-      <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+  <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
                 {editingId === meal.id ? (
                   <Input type="number" label="Meals" value={editMealCount} onChange={(e)=>setEditMealCount(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   meal.meal_count
                 )}
               </td>
-      <td className="border px-2 dark:border-gray-800">
+  <td className="px-4 py-3">
                 {editingId === meal.id ? (
                   <div className="flex gap-2">
-                    <button
-                      onClick={saveEdit}
-                      disabled={saving}
-                      className={`bg-green-600 text-white px-3 py-1 rounded ${saving ? 'opacity-60' : ''}`}
-                    >
+                    <Button onClick={saveEdit} disabled={saving} variant="success" size="sm">
                       {saving ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-1 rounded"
-                    >
+                    </Button>
+                    <Button onClick={cancelEdit} variant="outline" size="sm">
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => startEdit(meal)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded"
-                      disabled={!member}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteMeal(meal.id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded"
-                      disabled={deletingId === meal.id || !member}
-                    >
-                      {deletingId === meal.id ? 'Deleting...' : 'Delete'}
-                    </button>
+                    <Button onClick={() => startEdit(meal)} variant="warning" size="icon" aria-label="Edit" title="Edit" disabled={!member} className="rounded-full">
+                      <EditIcon className="h-4 w-4" />
+                    </Button>
+                    <Button onClick={() => deleteMeal(meal.id)} variant="danger" size="icon" aria-label="Delete" title="Delete" disabled={deletingId === meal.id || !member} className="rounded-full">
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
               </td>
             </tr>
           ))}
         </tbody>
-  </table>
+      </table>
+    </div>
   </div>
     </div>
   );

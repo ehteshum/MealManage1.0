@@ -15,6 +15,29 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <script>
+      (function() {
+        try {
+          var key = 'keep-react-theme';
+          // Clear any stored theme and force light
+          try { localStorage.removeItem(key); } catch(e){}
+          var root = document.documentElement;
+          var body = document.body;
+          root.classList.remove('dark');
+          body && body.classList.remove('dark');
+          root.classList.add('light');
+          body && body.classList.add('light');
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Ensure the page canvas is correct even before the app CSS loads */
+      html { background-color: #f9fafb; }
+      html.dark { background-color: #0b1220; }
+      body.light { background-color: #f9fafb; }
+      body.dark { background-color: #0b1220; }
+      body { margin: 0; }
+    </style>
   <!-- Roboto font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +55,8 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+  <div id="app-bg"></div>
+  <div id="root"></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

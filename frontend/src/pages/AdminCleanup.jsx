@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Button from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminCleanup() {
@@ -142,7 +143,7 @@ export default function AdminCleanup() {
         <p className="text-sm text-gray-600 dark:text-gray-400">Remove seeded/test data. Use with caution.</p>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+  {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl bg-white dark:bg-gray-900 p-4 ring-1 ring-gray-100 dark:ring-gray-800">
@@ -166,11 +167,7 @@ export default function AdminCleanup() {
       <div className="rounded-xl bg-white dark:bg-gray-900 p-4 ring-1 ring-gray-100 dark:ring-gray-800 space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Wipe My Data</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400">Deletes your meals, bazar, and deposits. Keeps your member profile.</p>
-        <button
-          disabled={loading}
-          onClick={wipeOwnData}
-          className={`px-4 py-2 rounded bg-red-600 text-white ${loading ? 'opacity-60' : ''}`}
-        >{loading ? 'Working…' : 'Delete My Records'}</button>
+  <Button disabled={loading} onClick={wipeOwnData} variant="danger">{loading ? 'Working…' : 'Delete My Records'}</Button>
       </div>
 
       <div className="rounded-xl bg-white dark:bg-gray-900 p-4 ring-1 ring-gray-100 dark:ring-gray-800 space-y-3">
@@ -184,22 +181,14 @@ export default function AdminCleanup() {
             placeholder="Member name (case-insensitive)"
             className="border p-2 rounded w-64 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
           />
-          <button
-            disabled={workingName}
-            onClick={deleteByMemberName}
-            className={`px-4 py-2 rounded bg-amber-600 text-white ${workingName ? 'opacity-60' : ''}`}
-          >{workingName ? 'Working…' : 'Delete by Name'}</button>
+          <Button disabled={workingName} onClick={deleteByMemberName} variant="warning">{workingName ? 'Working…' : 'Delete by Name'}</Button>
         </div>
       </div>
 
       <div className="rounded-xl bg-white dark:bg-gray-900 p-4 ring-1 ring-gray-100 dark:ring-gray-800 space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Members Without Account</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400">Removes members where auth_user_id is NULL and all their records.</p>
-        <button
-          disabled={workingNoAuth}
-          onClick={deleteMembersWithoutAuth}
-          className={`px-4 py-2 rounded bg-gray-900 text-white ${workingNoAuth ? 'opacity-60' : ''}`}
-        >{workingNoAuth ? 'Working…' : 'Delete No-Auth Members'}</button>
+  <Button disabled={workingNoAuth} onClick={deleteMembersWithoutAuth} variant="secondary">{workingNoAuth ? 'Working…' : 'Delete No-Auth Members'}</Button>
       </div>
 
       <div className="rounded-xl bg-white dark:bg-gray-900 p-4 ring-1 ring-gray-100 dark:ring-gray-800 space-y-3">
@@ -213,11 +202,7 @@ export default function AdminCleanup() {
           className="border p-2 rounded w-64 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         />
         <div>
-          <button
-            disabled={loading}
-            onClick={wipeAllData}
-            className={`px-4 py-2 rounded bg-black text-white ${loading ? 'opacity-60' : ''}`}
-          >{loading ? 'Working…' : 'Delete ALL (try)'}</button>
+          <Button disabled={loading} onClick={wipeAllData} variant="secondary">{loading ? 'Working…' : 'Delete ALL (try)'}</Button>
         </div>
       </div>
     </div>
