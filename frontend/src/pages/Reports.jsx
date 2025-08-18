@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { fetchGlobalAggregates } from '../lib/aggregates';
 import { formatDateWithDay } from '../lib/formatters';
 
 function StatCard({ title, value }) {
@@ -18,23 +17,49 @@ export default function Reports() {
   const [bazar, setBazar] = useState([]);
   const [deposits, setDeposits] = useState([]);
   const [error, setError] = useState('');
-  const [globalTotals, setGlobalTotals] = useState({ meals: 0, bazar: 0, deposits: 0, mealRate: 0 });
-  const [monthTotalBazar, setMonthTotalBazar] = useState(0);
+  // Period boundaries for the selected month
+  const [period, setPeriod] = useState({ start: '', end: '' });
+  // Selected month dropdown (YYYY-MM), default current month
+  const todayInit = new Date();
+  const defaultMonth = `${todayInit.getFullYear()}-${String(todayInit.getMonth() + 1).padStart(2, '0')}`;
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
 
-  // Fetch all-time data across all members
+  // Fetch data across all members for the selected month
   useEffect(() => {
     let active = true;
     (async () => {
       setError('');
-  const [membersRes, mealsRes, bazarRes, depRes, globalAgg] = await Promise.all([
+      // Compute [start, end] for the selected month (full calendar month)
+      const toYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const [yStr, mStr] = selectedMonth.split('-');
+      const y = Number(yStr);
+      const m = Number(mStr) - 1; // 0-based month index
+      const startDate = new Date(y, m, 1);
+      const endDate = new Date(y, m + 1, 0);
+      const startStr = toYMD(startDate);
+      const endStr = toYMD(endDate);
+      setPeriod({ start: startStr, end: endStr });
+
+      const [membersRes, mealsRes, bazarRes, depRes] = await Promise.all([
         supabase.from('members').select('*'),
-        supabase.from('meals').select('id, member_id, meal_count, date'),
-        supabase.from('bazar').select('id, member_id, item_name, cost, date'),
-        supabase.from('deposits').select('id, member_id, amount, date'),
-        fetchGlobalAggregates(supabase),
+        supabase
+          .from('meals')
+          .select('id, member_id, meal_count, date')
+          .gte('date', startStr)
+          .lte('date', endStr),
+        supabase
+          .from('bazar')
+          .select('id, member_id, item_name, cost, date')
+          .gte('date', startStr)
+          .lte('date', endStr),
+        supabase
+          .from('deposits')
+          .select('id, member_id, amount, date')
+          .gte('date', startStr)
+          .lte('date', endStr),
       ]);
       if (!active) return;
-  const err = membersRes.error || mealsRes.error || bazarRes.error || depRes.error;
+      const err = membersRes.error || mealsRes.error || bazarRes.error || depRes.error;
       if (err) {
         setError(err.message);
         setMembers([]); setMeals([]); setBazar([]); setDeposits([]);
@@ -43,29 +68,11 @@ export default function Reports() {
         setMeals(mealsRes.data || []);
         setBazar(bazarRes.data || []);
         setDeposits(depRes.data || []);
-        setGlobalTotals({
-          meals: globalAgg.totalMealsAll || 0,
-          bazar: globalAgg.totalBazarAll || 0,
-          deposits: globalAgg.totalDepositsAll || 0,
-          mealRate: globalAgg.mealRate || 0,
-        });
-        // compute current month total bazar
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const start = new Date(year, month, 1);
-        const end = new Date(year, month + 1, 1);
-        const monthTotal = (bazarRes.data || [])
-          .filter(r => {
-            const d = new Date(r.date);
-            return d >= start && d < end;
-          })
-          .reduce((s, r) => s + (Number(r.cost) || 0), 0);
-        setMonthTotalBazar(monthTotal);
+  // Monthly sections compute their own totals and meal rate below.
       }
     })();
     return () => { active = false; };
-  }, []);
+  }, [selectedMonth]);
 
   // Month boundaries computed inline for queries in the effect
 
@@ -78,17 +85,7 @@ export default function Reports() {
 
   // Aggregates: balance per-user is computed in ledger; overall balance unused
 
-  // Per-member aggregates
-  const mealsByMember = useMemo(() => {
-    const map = new Map();
-    for (const r of mealsM) map.set(r.member_id, (map.get(r.member_id) || 0) + (Number(r.meal_count) || 0));
-    return map;
-  }, [mealsM]);
-  const depositsByMember = useMemo(() => {
-    const map = new Map();
-    for (const r of depositsM) map.set(r.member_id, (map.get(r.member_id) || 0) + (Number(r.amount) || 0));
-    return map;
-  }, [depositsM]);
+  // Per-member aggregates for the whole period are not needed; monthly sections compute per-month aggregates.
 
   const memberNameById = useMemo(() => {
     const map = new Map();
@@ -101,206 +98,279 @@ export default function Reports() {
     return members.slice().sort((a, b) => (a.name || a.email || '').localeCompare(b.name || b.email || ''));
   }, [members]);
 
-  // Build a pivot: rows = dates, columns = members, value = meal count
-  const mealPivot = useMemo(() => {
-    const byDate = new Map(); // day(YYYY-MM-DD) -> Map(member_id -> count)
-    for (const r of mealsM) {
-      const day = (r.date || '').slice(0, 10);
-      if (!day) continue;
-      if (!byDate.has(day)) byDate.set(day, new Map());
-      const inner = byDate.get(day);
-      inner.set(r.member_id, (inner.get(r.member_id) || 0) + (Number(r.meal_count) || 0));
-    }
-    const rows = Array.from(byDate.entries()).map(([day, counts]) => ({ day, counts }));
-    rows.sort((a, b) => new Date(a.day) - new Date(b.day)); // ascending by date
-    return rows;
-  }, [mealsM]);
+  // Removed unused all-range meal pivot and ledger; monthly sections compute their own.
 
-  const ledger = useMemo(() => {
-    return members.map((m) => {
-      const mMeals = mealsByMember.get(m.id) || 0;
-      const mDeposits = depositsByMember.get(m.id) || 0;
-      const mFairShare = mMeals * (globalTotals.mealRate || 0);
-      const mNet = mDeposits - mFairShare;
-      return {
-        memberId: m.id,
-        name: m.name || m.email || 'Unnamed',
-        meals: mMeals,
-        deposits: mDeposits,
-        fairShare: mFairShare,
-        net: mNet,
-      };
-    }).sort((a,b) => a.name.localeCompare(b.name));
-  }, [members, mealsByMember, depositsByMember, globalTotals.mealRate]);
+  // Build list of calendar months between period.start and period.end (inclusive)
+  const monthsInRange = useMemo(() => {
+    if (!period.start || !period.end) return [];
+    const start = new Date(period.start);
+    const end = new Date(period.end);
+    // Normalize to first/last day
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    const lastMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+    const arr = [];
+    while (cursor <= lastMonth) {
+      const year = cursor.getFullYear();
+      const month = cursor.getMonth();
+      const startOfMonth = new Date(year, month, 1);
+      const endOfMonth = new Date(year, month + 1, 0);
+      const label = startOfMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+      arr.push({
+        key: `${year}-${String(month + 1).padStart(2, '0')}`,
+        label,
+        startYMD: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+        endYMD: `${year}-${String(month + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`,
+        startDate: startOfMonth,
+        endDate: endOfMonth,
+      });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return arr;
+  }, [period]);
 
   
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">All-time summary and details.</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {period.start && period.end ? `Month: ${formatDateWithDay(period.start)} → ${formatDateWithDay(period.end)}` : 'Select a month'}
+            </p>
+          </div>
+          <div className="shrink-0">
+            <label htmlFor="selectedMonth" className="mr-2 text-sm text-gray-700 dark:text-gray-300">Month</label>
+            <select
+              id="selectedMonth"
+              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 dark:text-gray-100 dark:bg-gray-900 dark:border-gray-700"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              {(() => {
+                const opts = [];
+                const base = new Date();
+                for (let i = 0; i < 12; i++) {
+                  const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+                  const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                  const label = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+                  opts.push(<option key={ym} value={ym}>{label}</option>);
+                }
+                return opts;
+              })()}
+            </select>
+          </div>
+        </div>
       </div>
 
       {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
-      
+      {/* Per-month sections */}
+      {monthsInRange.map((m) => {
+        // Filter arrays for this calendar month
+        const mealsMonth = mealsM.filter(r => r.date && r.date >= m.startYMD && r.date <= m.endYMD);
+        const bazarMonth = bazarM.filter(r => r.date && r.date >= m.startYMD && r.date <= m.endYMD);
+        const depositsMonth = depositsM.filter(r => r.date && r.date >= m.startYMD && r.date <= m.endYMD);
 
-    {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <StatCard title="Total Meals (Global)" value={globalTotals.meals} />
-  <StatCard title="Total Bazar (This Month)" value={`${monthTotalBazar.toFixed(2)} taka`} />
-  <StatCard title="Total Deposits (Global)" value={`${globalTotals.deposits.toFixed(2)} taka`} />
-  <StatCard title="Meal Rate (Global)" value={globalTotals.meals ? `${globalTotals.mealRate.toFixed(2)} taka` : '—'} />
-      </div>
+        // Monthly totals and meal rate
+        const totalMeals = mealsMonth.reduce((s, r) => s + (Number(r.meal_count) || 0), 0);
+        const totalBazar = bazarMonth.reduce((s, r) => s + (Number(r.cost) || 0), 0);
+        const totalDeposits = depositsMonth.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+        const mealRate = totalMeals > 0 ? totalBazar / totalMeals : 0;
 
-  {/* Personal debit/credit removed: reports show global/all members only */}
+        // Monthly per-member aggregates for ledger
+        const mealsByMemberMonth = new Map();
+        for (const r of mealsMonth) mealsByMemberMonth.set(r.member_id, (mealsByMemberMonth.get(r.member_id) || 0) + (Number(r.meal_count) || 0));
+        const depositsByMemberMonth = new Map();
+        for (const r of depositsMonth) depositsByMemberMonth.set(r.member_id, (depositsByMemberMonth.get(r.member_id) || 0) + (Number(r.amount) || 0));
+        const ledgerMonth = members.map((mem) => {
+          const mMeals = mealsByMemberMonth.get(mem.id) || 0;
+          const mDeposits = depositsByMemberMonth.get(mem.id) || 0;
+          const mFair = mMeals * mealRate;
+          return {
+            memberId: mem.id,
+            name: mem.name || mem.email || 'Unnamed',
+            meals: mMeals,
+            deposits: mDeposits,
+            fairShare: mFair,
+            net: mDeposits - mFair,
+          };
+        }).sort((a,b) => a.name.localeCompare(b.name));
 
-  {/* Bazar list (all members) */}
-  <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar List (All Members)</h2>
-        </div>
-  <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-    <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-        {['Date','Member','Item','Cost'].map((h) => (
-      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {bazarM
-                .slice()
-                .sort((a, b) => {
-                  const ta = a?.date ? new Date(a.date).getTime() : 0;
-                  const tb = b?.date ? new Date(b.date).getTime() : 0;
-                  if (ta !== tb) return ta - tb; // ascending by date/time
-                  // stable fallback by id
-                  const ai = typeof a.id === 'number' ? a.id : String(a.id);
-                  const bi = typeof b.id === 'number' ? b.id : String(b.id);
-                  if (typeof ai === 'number' && typeof bi === 'number') return ai - bi;
-                  return String(ai).localeCompare(String(bi));
-                })
-                .map((row) => (
-        <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
-  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.item_name ?? row.item ?? row.name ?? '—'}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.cost).toFixed(2)} taka</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        // Monthly meal pivot
+        const byDate = new Map();
+        for (const r of mealsMonth) {
+          const day = (r.date || '').slice(0, 10);
+          if (!day) continue;
+          if (!byDate.has(day)) byDate.set(day, new Map());
+          const inner = byDate.get(day);
+          inner.set(r.member_id, (inner.get(r.member_id) || 0) + (Number(r.meal_count) || 0));
+        }
+        const mealPivotMonth = Array.from(byDate.entries()).map(([day, counts]) => ({ day, counts }))
+          .sort((a, b) => new Date(a.day) - new Date(b.day));
 
-      {/* Meal entries (all members) - pivot table: rows=dates, columns=members */}
-      <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count (All Members)</h2>
-        </div>
-  <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                {membersSorted.map((m) => (
-                  <th key={m.id} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{m.name || m.email || 'Unnamed'}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {mealPivot.map((row) => {
-                return (
-                  <tr key={row.day} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.day)}</td>
-                    {membersSorted.map((m) => {
-                      const val = row.counts.get(m.id) || '';
-                      return (
-                        <td key={`${row.day}-${m.id}`} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{val || ''}</td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        return (
+          <div key={m.key} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{m.label}</h2>
+            </div>
 
-      {/* Deposits (all members) */}
-      <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits (All Members)</h2>
-        </div>
-  <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-    <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                {['Date','Member','Amount'].map((h) => (
-      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {depositsM
-                .slice()
-                .sort((a, b) => {
-                  const ta = a?.date ? new Date(a.date).getTime() : 0;
-                  const tb = b?.date ? new Date(b.date).getTime() : 0;
-                  if (ta !== tb) return ta - tb; // ascending by date/time
-                  // stable fallback by id
-                  const ai = typeof a.id === 'number' ? a.id : String(a.id);
-                  const bi = typeof b.id === 'number' ? b.id : String(b.id);
-                  if (typeof ai === 'number' && typeof bi === 'number') return ai - bi;
-                  return String(ai).localeCompare(String(bi));
-                })
-                .map((row) => (
-        <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.amount).toFixed(2)} taka</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            {/* Monthly summary */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard title="Total Meals" value={totalMeals} />
+              <StatCard title="Total Bazar" value={`${totalBazar.toFixed(2)} taka`} />
+              <StatCard title="Total Deposits" value={`${totalDeposits.toFixed(2)} taka`} />
+              <StatCard title="Meal Rate" value={totalMeals ? `${mealRate.toFixed(2)} taka` : '—'} />
+            </div>
 
-  {/* Ledger */}
-  <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-          <div>
-    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger (All Members)</h2>
-    <p className="text-sm text-gray-600 dark:text-gray-400">Meal rate applies to everyone: {globalTotals.meals ? `${globalTotals.mealRate.toFixed(4)} taka` : '—'}</p>
+            {/* Bazar list (month) */}
+            <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      {['Date','Member','Item','Cost'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {bazarMonth
+                      .slice()
+                      .sort((a, b) => new Date(a.date) - new Date(b.date))
+                      .map((row) => (
+                        <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.item_name ?? row.item ?? row.name ?? '—'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.cost).toFixed(2)} taka</td>
+                        </tr>
+                      ))}
+                    {bazarMonth.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No bazar entries</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Meal entries (month) - pivot */}
+            <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                      {membersSorted.map((mem) => (
+                        <th key={mem.id} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{mem.name || mem.email || 'Unnamed'}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {mealPivotMonth.map((row) => (
+                      <tr key={row.day} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.day)}</td>
+                        {membersSorted.map((mem) => {
+                          const val = row.counts.get(mem.id) || '';
+                          return (
+                            <td key={`${row.day}-${mem.id}`} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{val || ''}</td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                    {mealPivotMonth.length === 0 && (
+                      <tr>
+                        <td colSpan={1 + membersSorted.length} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No meal entries</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Deposits (month) */}
+            <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      {['Date','Member','Amount'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {depositsMonth
+                      .slice()
+                      .sort((a, b) => new Date(a.date) - new Date(b.date))
+                      .map((row) => (
+                        <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.amount).toFixed(2)} taka</td>
+                        </tr>
+                      ))}
+                    {depositsMonth.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No deposit entries</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Ledger (month) */}
+            <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Meal rate: {totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      {['Member','Meals','Meal Rate','Fair Share','Deposits','Remaining Balance'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {ledgerMonth.map((row) => (
+                      <tr key={row.memberId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{row.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.meals}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.fairShare.toFixed(2)} taka</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.deposits.toFixed(2)} taka</td>
+                        <td className={`px-4 py-3 text-sm ${row.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{row.net >= 0 ? '' : '-'}{Math.abs(row.net).toFixed(2)} taka</td>
+                      </tr>) )}
+                    {ledgerMonth.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No data</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-    <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                {['Member','Meals','Meal Rate','Fair Share','Deposits','Remaining Balance'].map((h) => (
-      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {ledger.map((row) => (
-        <tr key={row.memberId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{row.name}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.meals}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{globalTotals.meals ? `${globalTotals.mealRate.toFixed(4)} taka` : '—'}</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.fairShare.toFixed(2)} taka</td>
-      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.deposits.toFixed(2)} taka</td>
-      <td className={`px-4 py-3 text-sm ${row.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{row.net >= 0 ? '' : '-'}{Math.abs(row.net).toFixed(2)} taka</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
