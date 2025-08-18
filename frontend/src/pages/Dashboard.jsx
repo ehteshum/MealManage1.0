@@ -135,7 +135,8 @@ export default function Dashboard() {
       default: return '';
     }
   }, []);
-  const highlightIndex = useMemo(() => daysHeaders.indexOf(todayHeader), [todayHeader]);
+  // Compute directly to avoid hook dependency noise
+  const highlightIndex = daysHeaders.indexOf(todayHeader);
   const tdBase = "px-3 py-2 text-sm text-gray-700 dark:text-gray-300";
   const thRowBase = "px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 text-left";
   const hiNameOnly = (idx) => (idx === highlightIndex ? ' bg-yellow-50 dark:bg-yellow-900/20 font-semibold ring-1 ring-yellow-200 dark:ring-yellow-800' : '');
@@ -323,7 +324,6 @@ function NoticeBoard({ postedBy, memberId }) {
             <div className="text-sm text-gray-500 dark:text-gray-400">No notices yet</div>
           )}
           {notices.map(n => {
-            const dateStr = n.date || '';
             const created = n.created_at || n.date || '';
             const dayStr = created ? formatDateWithDay(created.slice(0, 10)) : '';
             const timeStr = created ? formatTimeInTZ(created, 'Asia/Dhaka') : '';
