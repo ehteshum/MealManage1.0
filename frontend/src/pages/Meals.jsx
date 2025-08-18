@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Input } from "@material-tailwind/react";
 import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
@@ -152,13 +153,7 @@ export default function Meals() {
               className="border p-2 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
-          <input
-            type="number"
-            value={dinnerCount}
-            onChange={(e) => setDinnerCount(e.target.value)}
-            placeholder="Dinner meals"
-            className="border p-2 rounded w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-          />
+          <Input type="number" label="Dinner meals" value={dinnerCount} onChange={(e)=>setDinnerCount(e.target.value)} crossOrigin="anonymous"/>
         </div>
 
         <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
@@ -173,13 +168,7 @@ export default function Meals() {
               className="border p-2 rounded bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"
             />
           </div>
-          <input
-            type="number"
-            value={lunchCount}
-            onChange={(e) => setLunchCount(e.target.value)}
-            placeholder="Lunch meals (for next day)"
-            className="border p-2 rounded w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-          />
+          <Input type="number" label="Lunch meals (for next day)" value={lunchCount} onChange={(e)=>setLunchCount(e.target.value)} crossOrigin="anonymous"/>
         </div>
       </div>
 
@@ -226,12 +215,7 @@ export default function Meals() {
               </td>
       <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
                 {editingId === meal.id ? (
-                  <input
-                    type="number"
-                    value={editMealCount}
-                    onChange={(e) => setEditMealCount(e.target.value)}
-        className="border p-1 rounded w-24 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                  />
+                  <Input type="number" label="Meals" value={editMealCount} onChange={(e)=>setEditMealCount(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   meal.meal_count
                 )}

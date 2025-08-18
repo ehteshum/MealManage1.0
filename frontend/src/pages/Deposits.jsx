@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Input } from "@material-tailwind/react";
 import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
@@ -121,13 +122,7 @@ export default function Deposits() {
           className="border p-2 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         />
       </div>
-      <input
-        type="number"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Amount"
-        className="border p-2 rounded mr-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-      />
+  <div className="w-56 inline-block mr-2"><Input type="number" label="Amount" value={amount} onChange={(e)=>setAmount(e.target.value)} crossOrigin="anonymous"/></div>
   <button
         onClick={addDeposit}
         disabled={adding || !member}
@@ -167,12 +162,7 @@ export default function Deposits() {
               </td>
       <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
                 {editingId === row.id ? (
-                  <input
-                    type="number"
-                    value={editAmount}
-                    onChange={(e) => setEditAmount(e.target.value)}
-        className="border p-1 rounded w-28 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                  />
+                  <Input type="number" label="Amount" value={editAmount} onChange={(e)=>setEditAmount(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   `${Number(row.amount).toFixed(2)} taka`
                 )}

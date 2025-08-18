@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Input } from "@material-tailwind/react";
 import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
@@ -215,25 +216,13 @@ export default function Bazar() {
           <option value="user">Paid From: User</option>
         </select>
       </div>
-      <div className="flex flex-wrap gap-2 items-center">
-        <input
-          type="text"
-          value={itemName}
-          onChange={(e) => setItemName(e.target.value)}
-          placeholder="Item name"
-          className="border p-2 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-        />
-        <input
-          type="number"
-          value={cost}
-          onChange={(e) => setCost(e.target.value)}
-          placeholder="Cost"
-          className="border p-2 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-        />
+  <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+  <div className="w-60"><Input type="text" label="Item name" value={itemName} onChange={(e)=>setItemName(e.target.value)} crossOrigin="anonymous"/></div>
+  <div className="w-44 mr-3"><Input type="number" label="Cost" value={cost} onChange={(e)=>setCost(e.target.value)} crossOrigin="anonymous"/></div>
   <button
           onClick={addBazarItem}
           disabled={adding || !member}
-          className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${adding ? 'opacity-60 cursor-not-allowed' : ''}`}
+          className={`shrink-0 ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${adding ? 'opacity-60 cursor-not-allowed' : ''}`}
         >
           {adding ? 'Adding...' : 'Add'}
         </button>
@@ -270,24 +259,14 @@ export default function Bazar() {
               </td>
       <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
                 {editingId === row.id ? (
-                  <input
-                    type="text"
-                    value={editItemName}
-                    onChange={(e) => setEditItemName(e.target.value)}
-        className="border p-1 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                  />
+                  <Input type="text" label="Item" value={editItemName} onChange={(e)=>setEditItemName(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   row.item_name || row.item || row.name
                 )}
               </td>
       <td className="border px-2 dark:border-gray-800 text-gray-900 dark:text-gray-100">
                 {editingId === row.id ? (
-                  <input
-                    type="number"
-                    value={editCost}
-                    onChange={(e) => setEditCost(e.target.value)}
-        className="border p-1 rounded w-24 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                  />
+                  <Input type="number" label="Cost" value={editCost} onChange={(e)=>setEditCost(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   `${Number(row.cost).toFixed(2)} taka`
                 )}
