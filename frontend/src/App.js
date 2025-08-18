@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Dashboard from './pages/Dashboard';
 import Meals from './pages/Meals';
 import Bazar from './pages/Bazar';
@@ -29,7 +30,7 @@ export default function App() {
   <Route path="members/:id" element={<MemberReport />} />
   <Route path="reports" element={<Reports />} />
   <Route path="meal-chart" element={<MealChart />} />
-  <Route path="admin/cleanup" element={<AdminCleanup />} />
+  <Route path="admin/cleanup" element={<AdminRoute><AdminCleanup /></AdminRoute>} />
       </Route>
     </Routes>
   );

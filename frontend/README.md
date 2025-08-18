@@ -2,6 +2,8 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+Note: Admin gating is enabled for the member named "ISHMAM". Only this member sees and can access /admin/cleanup.
+
 ## Available Scripts
 
 In the project directory, you can run:
