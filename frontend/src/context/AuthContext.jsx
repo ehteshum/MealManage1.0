@@ -69,7 +69,15 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      // ignore; we'll clear local state anyway
+    } finally {
+      setSession(null);
+      setUser(null);
+      setMember(null);
+    }
   };
 
   return (
