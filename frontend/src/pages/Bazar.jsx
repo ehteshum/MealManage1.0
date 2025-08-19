@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
+import { logAction } from '../lib/audit';
 import { EditIcon, TrashIcon } from '../components/ui/Icons';
 
 export default function Bazar() {
@@ -50,7 +51,7 @@ export default function Bazar() {
   if (!itemName || !cost || !member) return;
     setAdding(true);
   const payload = [{ member_id: member.id, item_name: itemName, cost: Number(cost), date: selectedDate, paid_from: paidFrom }];
-    let data, insertErr;
+  let data, insertErr;
     {
       const res = await supabase.from('bazar').insert(payload).select();
       data = res.data; insertErr = res.error;
@@ -72,6 +73,9 @@ export default function Bazar() {
       return;
     }
     const inserted = (data || [])[0];
+    if (inserted) {
+      logAction({ table: 'bazar', action: 'create', rowId: inserted.id, before: null, after: inserted, member });
+    }
     // If paid by user, also insert a matching deposit
     if (paidFrom === 'user' && inserted) {
       const { error: depErr } = await supabase
@@ -113,7 +117,7 @@ export default function Bazar() {
     setError('');
     setSaving(true);
     const updates = { item_name: editItemName, cost: Number(editCost), date: editDate, paid_from: editPaidFrom };
-    let data, upErr;
+  let data, upErr;
     {
       const res = await supabase
       .from('bazar')
@@ -138,7 +142,8 @@ export default function Bazar() {
     }
     setSaving(false);
     if (upErr) { setError(upErr.message); return; }
-    const updated = data && data[0];
+  const prev = bazar.find(r => r.id === editingId) || null;
+  const updated = data && data[0];
     if (!updated) { cancelEdit(); return; }
 
     // Adjust deposits if paid_from changed
@@ -163,6 +168,7 @@ export default function Bazar() {
       const next = bazar.map(r => r.id === editingId ? updated : r)
         .sort((a,b) => new Date(b.date) - new Date(a.date));
       setBazar(next);
+  logAction({ table: 'bazar', action: 'update', rowId: updated.id, before: prev, after: updated, member });
       cancelEdit();
     } catch (e) {
       // Try to revert bazar update if deposit adjustment failed
@@ -181,14 +187,16 @@ export default function Bazar() {
     if (!ok) return;
     setError('');
     setDeletingId(id);
-    const { error: delErr } = await supabase
+  const prev = bazar.find(r => r.id === id) || null;
+  const { error: delErr } = await supabase
       .from('bazar')
       .delete()
       .eq('id', id)
       .eq('member_id', member.id);
     setDeletingId(null);
     if (delErr) { setError(delErr.message); return; }
-    setBazar(bazar.filter(r => r.id !== id));
+  setBazar(bazar.filter(r => r.id !== id));
+  logAction({ table: 'bazar', action: 'delete', rowId: id, before: prev, after: null, member });
   };
 
   return (
@@ -238,7 +246,7 @@ export default function Bazar() {
       <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Bazar</h3>
     </div>
     <div className="overflow-x-auto">
-      <table className="min-w-[640px] table-auto divide-y divide-gray-200 dark:divide-gray-800">
+  <table className="min-w-[640px] table-auto divide-y divide-gray-200 dark:divide-gray-800">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>

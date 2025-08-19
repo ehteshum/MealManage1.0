@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
+import { logAction } from '../lib/audit';
 import { EditIcon, TrashIcon } from '../components/ui/Icons';
 
 export default function Meals() {
@@ -78,6 +79,10 @@ export default function Meals() {
       setError(insertErr.message);
       return;
     }
+    // Audit each inserted row
+    for (const row of data || []) {
+      logAction({ table: 'meals', action: 'create', rowId: row.id, before: null, after: row, member });
+    }
     const merged = [...meals, ...(data || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
     setMeals(merged);
     setDinnerCount('');
@@ -102,7 +107,9 @@ export default function Meals() {
     setError('');
     setSaving(true);
     const updates = { meal_count: Number(editMealCount), date: editDate };
-    const { data, error: upErr } = await supabase
+  // Fetch previous state for audit
+  const prev = meals.find(m => m.id === editingId) || null;
+  const { data, error: upErr } = await supabase
       .from('meals')
       .update(updates)
       .eq('id', editingId)
@@ -115,6 +122,7 @@ export default function Meals() {
       const next = meals.map(m => m.id === editingId ? updated : m)
         .sort((a,b) => new Date(b.date) - new Date(a.date));
       setMeals(next);
+      logAction({ table: 'meals', action: 'update', rowId: updated.id, before: prev, after: updated, member });
     }
     cancelEdit();
   };
@@ -125,14 +133,17 @@ export default function Meals() {
     if (!ok) return;
     setError('');
     setDeletingId(id);
-    const { error: delErr } = await supabase
+  // Capture the row before delete for audit (best-effort from local state)
+  const prev = meals.find(m => m.id === id) || null;
+  const { error: delErr } = await supabase
       .from('meals')
       .delete()
       .eq('id', id)
       .eq('member_id', member.id);
     setDeletingId(null);
     if (delErr) { setError(delErr.message); return; }
-    setMeals(meals.filter(m => m.id !== id));
+  setMeals(meals.filter(m => m.id !== id));
+  logAction({ table: 'meals', action: 'delete', rowId: id, before: prev, after: null, member });
   };
 
   return (
@@ -191,7 +202,7 @@ export default function Meals() {
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Meals</h3>
     </div>
     <div className="overflow-x-auto">
-      <table className="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-800">
+  <table className="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-800">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>

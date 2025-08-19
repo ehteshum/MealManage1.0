@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../context/AuthContext';
+import { logAction } from '../lib/audit';
 import { todayISOInTZ, formatTimeInTZ, isAfterHourInTZ } from '../lib/formatters';
 
 export default function MealChart() {
+  const { member } = useAuth();
   const [dinnerDate, setDinnerDate] = useState(todayISOInTZ());
   const lunchDate = useMemo(() => {
     const iso = dinnerDate;
@@ -119,29 +122,42 @@ export default function MealChart() {
     setModalError('');
     try {
       if (modalType === 'edit') {
-        const ops = [];
+        const targets = [];
         if (chooseDinner && modalRow.dinnerRecId) {
           const val = Number(editDinnerValue);
           if (Number.isNaN(val)) throw new Error('Dinner value must be a number');
-          ops.push(supabase.from('meals').update({ meal_count: val }).eq('id', modalRow.dinnerRecId));
+          targets.push({ id: modalRow.dinnerRecId, val });
         }
         if (chooseLunch && modalRow.lunchRecId) {
           const val = Number(editLunchValue);
           if (Number.isNaN(val)) throw new Error('Lunch value must be a number');
-          ops.push(supabase.from('meals').update({ meal_count: val }).eq('id', modalRow.lunchRecId));
+          targets.push({ id: modalRow.lunchRecId, val });
         }
-        if (ops.length === 0) throw new Error('Select at least one target');
-        const results = await Promise.all(ops);
-        const err = results.find(r => r.error)?.error;
-        if (err) throw err;
+        if (targets.length === 0) throw new Error('Select at least one target');
+        for (const t of targets) {
+          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', t.id).single();
+          if (prevErr && !String(prevErr.message || '').toLowerCase().includes('row')) throw prevErr;
+          const { data: after, error: upErr } = await supabase
+            .from('meals')
+            .update({ meal_count: t.val })
+            .eq('id', t.id)
+            .select()
+            .single();
+          if (upErr) throw upErr;
+          await logAction({ table: 'meals', action: 'update', rowId: t.id, before: prev || null, after, member, source: 'meal_chart' });
+        }
       } else if (modalType === 'delete') {
-        const ops = [];
-        if (chooseDinner && modalRow.dinnerRecId) ops.push(supabase.from('meals').delete().eq('id', modalRow.dinnerRecId));
-        if (chooseLunch && modalRow.lunchRecId) ops.push(supabase.from('meals').delete().eq('id', modalRow.lunchRecId));
-        if (ops.length === 0) throw new Error('Select at least one target');
-        const results = await Promise.all(ops);
-        const err = results.find(r => r.error)?.error;
-        if (err) throw err;
+        const ids = [];
+        if (chooseDinner && modalRow.dinnerRecId) ids.push(modalRow.dinnerRecId);
+        if (chooseLunch && modalRow.lunchRecId) ids.push(modalRow.lunchRecId);
+        if (ids.length === 0) throw new Error('Select at least one target');
+        for (const id of ids) {
+          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', id).single();
+          if (prevErr && !String(prevErr.message || '').toLowerCase().includes('row')) throw prevErr;
+          const { error: delErr } = await supabase.from('meals').delete().eq('id', id);
+          if (delErr) throw delErr;
+          await logAction({ table: 'meals', action: 'delete', rowId: id, before: prev || null, after: null, member, source: 'meal_chart' });
+        }
       }
       closeModal();
       await fetchData(dinnerDate, lunchDate);

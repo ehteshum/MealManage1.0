@@ -158,7 +158,7 @@ function SimpleTable({ columns, rows, empty, format }) {
     return <div className="text-sm text-gray-500 dark:text-gray-400">{empty}</div>;
   }
   return (
-    <table className="min-w-full text-sm">
+  <table className="min-w-full text-sm">
       <thead>
         <tr>
           {columns.map((c, idx) => (

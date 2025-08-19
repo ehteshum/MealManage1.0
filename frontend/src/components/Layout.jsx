@@ -124,6 +124,7 @@ export default function Layout() {
                 <NavLink to="/members" className={navLinkClass}>Members</NavLink>
                 <NavLink to="/reports" className={navLinkClass}>Reports</NavLink>
                 <NavLink to="/meal-chart" className={navLinkClass}>Meal Chart</NavLink>
+                {user && isAdmin && <NavLink to="/admin/audit" className={navLinkClass}>Audit</NavLink>}
                 {user && isAdmin && <NavLink to="/admin/cleanup" className={navLinkClass}>Admin</NavLink>}
                 {!user && <NavLink to="/login" className={navLinkClass}>Login</NavLink>}
                 {!user && <NavLink to="/signup" className={navLinkClass}>Signup</NavLink>}
@@ -164,6 +165,7 @@ export default function Layout() {
               <NavLink to="/members" className={navLinkClass} onClick={() => setMobileOpen(false)}>Members</NavLink>
               <NavLink to="/reports" className={navLinkClass} onClick={() => setMobileOpen(false)}>Reports</NavLink>
               <NavLink to="/meal-chart" className={navLinkClass} onClick={() => setMobileOpen(false)}>Meal Chart</NavLink>
+              {user && isAdmin && <NavLink to="/admin/audit" className={navLinkClass} onClick={() => setMobileOpen(false)}>Audit</NavLink>}
               {user && isAdmin && <NavLink to="/admin/cleanup" className={navLinkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>}
               {!user && <NavLink to="/login" className={navLinkClass} onClick={() => setMobileOpen(false)}>Login</NavLink>}
               {!user && <NavLink to="/signup" className={navLinkClass} onClick={() => setMobileOpen(false)}>Signup</NavLink>}

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay, todayISOInTZ } from '../lib/formatters';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
+import { logAction } from '../lib/audit';
 import { EditIcon, TrashIcon } from '../components/ui/Icons';
 
 export default function Deposits() {
@@ -51,6 +52,9 @@ export default function Deposits() {
       setError(insertErr.message);
       return;
     }
+    for (const row of data || []) {
+      logAction({ table: 'deposits', action: 'create', rowId: row.id, before: null, after: row, member });
+    }
   const merged = [...deposits, ...(data || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
     setDeposits(merged);
     setAmount('');
@@ -74,7 +78,8 @@ export default function Deposits() {
     setError('');
     setSaving(true);
     const updates = { amount: Number(editAmount), date: editDate };
-    const { data, error: upErr } = await supabase
+  const prev = deposits.find(r => r.id === editingId) || null;
+  const { data, error: upErr } = await supabase
       .from('deposits')
       .update(updates)
       .eq('id', editingId)
@@ -87,6 +92,7 @@ export default function Deposits() {
       const next = deposits.map(r => r.id === editingId ? updated : r)
   .sort((a,b) => new Date(b.date) - new Date(a.date));
       setDeposits(next);
+      logAction({ table: 'deposits', action: 'update', rowId: updated.id, before: prev, after: updated, member });
     }
     cancelEdit();
   };
@@ -97,14 +103,16 @@ export default function Deposits() {
     if (!ok) return;
     setError('');
     setDeletingId(id);
-    const { error: delErr } = await supabase
+  const prev = deposits.find(r => r.id === id) || null;
+  const { error: delErr } = await supabase
       .from('deposits')
       .delete()
       .eq('id', id)
       .eq('member_id', member.id);
     setDeletingId(null);
     if (delErr) { setError(delErr.message); return; }
-    setDeposits(deposits.filter(r => r.id !== id));
+  setDeposits(deposits.filter(r => r.id !== id));
+  logAction({ table: 'deposits', action: 'delete', rowId: id, before: prev, after: null, member });
   };
 
   return (
@@ -142,7 +150,7 @@ export default function Deposits() {
       <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Deposits</h3>
     </div>
     <div className="overflow-x-auto">
-      <table className="min-w-[520px] table-auto divide-y divide-gray-200 dark:divide-gray-800">
+  <table className="min-w-[520px] table-auto divide-y divide-gray-200 dark:divide-gray-800">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
