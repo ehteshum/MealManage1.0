@@ -83,7 +83,9 @@ export default function Layout() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-6">
-              <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">Meal Manage</span>
+              <NavLink to="/" end className="text-xl font-semibold text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                Meal Manage
+              </NavLink>
               <div className="hidden md:flex items-center gap-2">
                 <NavLink to="/" end className={navLinkClass}>Dashboard</NavLink>
                 <NavLink to="/meals" className={navLinkClass}>Meals</NavLink>
