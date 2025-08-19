@@ -43,6 +43,20 @@ export default function Login() {
     else setInfo('Verification email resent. Check your inbox (and spam).');
   };
 
+  const sendPasswordReset = async () => {
+    setError(''); setInfo('');
+    const email = (form.email || '').trim();
+    if (!email) {
+      setError('Enter your email above, then click Forgot password.');
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) setError(error.message);
+    else setInfo('Password reset email sent. Check your inbox (and spam).');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6">
@@ -96,6 +110,7 @@ export default function Login() {
                 )}
               </button>
             </div>
+            <button type="button" onClick={sendPasswordReset} className="mt-2 text-sm text-blue-600 hover:underline">Forgot password?</button>
           </div>
           <button type="submit" disabled={loading}
             className="w-full rounded-md bg-blue-600 text-white py-2 hover:bg-blue-700 disabled:opacity-60">

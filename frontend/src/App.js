@@ -14,6 +14,7 @@ import MealChart from './pages/MealChart';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AuthCallback from './pages/AuthCallback';
+import ResetPassword from './pages/ResetPassword';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
   <Route path="/auth/callback" element={<AuthCallback />} />
   <Route path="/login" element={<Login />} />
   <Route path="/signup" element={<Signup />} />
+  <Route path="/reset-password" element={<ResetPassword />} />
   <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="meals" element={<Meals />} />
