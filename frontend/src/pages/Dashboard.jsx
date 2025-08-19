@@ -282,7 +282,11 @@ function NoticeBoard({ postedBy, memberId }) {
 
   const clearAll = async () => {
     try {
-      const { error: err } = await supabase.from('notices').delete().neq('id', 0);
+      // Use a type-agnostic filter that matches all rows without assuming ID type (uuid vs bigint)
+      const { error: err } = await supabase
+        .from('notices')
+        .delete()
+        .not('id', 'is', null);
       if (err) throw err;
       fetchNotices();
     } catch (e) {
