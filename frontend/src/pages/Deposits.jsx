@@ -124,7 +124,7 @@ export default function Deposits() {
           className="border p-2 rounded bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         />
       </div>
-  <div className="w-56 inline-block mr-2"><Input type="number" label="Amount" value={amount} onChange={(e)=>setAmount(e.target.value)} crossOrigin="anonymous"/></div>
+  <div className="w-48 sm:w-56 inline-block mr-2"><Input type="number" label="Amount" value={amount} onChange={(e)=>setAmount(e.target.value)} crossOrigin="anonymous"/></div>
   <Button
         onClick={addDeposit}
         disabled={adding || !member}
@@ -138,22 +138,22 @@ export default function Deposits() {
       )}
 
   <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 mt-6">
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Deposits</h3>
+    <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Deposits</h3>
     </div>
     <div className="overflow-x-auto">
-      <table className="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-800">
+      <table className="min-w-[520px] table-auto divide-y divide-gray-200 dark:divide-gray-800">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+            <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
           {deposits.map((row) => (
     <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-  <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900">
                 {editingId === row.id ? (
                   <input
                     type="date"
@@ -165,14 +165,14 @@ export default function Deposits() {
                   formatDateWithDay(row.date)
                 )}
               </td>
-  <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                 {editingId === row.id ? (
                   <Input type="number" label="Amount" value={editAmount} onChange={(e)=>setEditAmount(e.target.value)} crossOrigin="anonymous"/>
                 ) : (
                   `${Number(row.amount).toFixed(2)} taka`
                 )}
               </td>
-  <td className="px-4 py-3">
+  <td className="px-3 sm:px-4 py-3">
                 {editingId === row.id ? (
                   <div className="flex gap-2">
                     <Button onClick={saveEdit} disabled={saving} variant="success" size="sm">

@@ -98,11 +98,11 @@ export default function Dashboard() {
 
   function StatCard({ title, value, Icon, color, imgSrc, imgAlt = 'icon' }) {
     return (
-      <div className="rounded-xl bg-white dark:bg-gray-900 p-5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+  <div className="rounded-xl bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-gray-500 dark:text-gray-400">{title}</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</div>
+    <div className="mt-2 text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</div>
           </div>
           {imgSrc ? (
             <img src={imgSrc} alt={imgAlt} className="w-12 h-12 object-contain" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo192.png'; }} />
@@ -137,8 +137,8 @@ export default function Dashboard() {
   }, []);
   // Compute directly to avoid hook dependency noise
   const highlightIndex = daysHeaders.indexOf(todayHeader);
-  const tdBase = "px-3 py-2 text-sm text-gray-700 dark:text-gray-300";
-  const thRowBase = "px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 text-left";
+  const tdBase = "px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm text-gray-700 dark:text-gray-300";
+  const thRowBase = "px-2 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 text-left";
   const hiNameOnly = (idx) => (idx === highlightIndex ? ' bg-yellow-50 dark:bg-yellow-900/20 font-semibold ring-1 ring-yellow-200 dark:ring-yellow-800' : '');
 
   return (
@@ -168,11 +168,11 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Weekly Plan</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+            <table className="min-w-[720px] divide-y divide-gray-200 dark:divide-gray-800">
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
                   {daysHeaders.map((h) => (
-                    <th key={h} className={"px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"}>{h}</th>
+                    <th key={h} className={"px-2 sm:px-3 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -292,13 +292,13 @@ function NoticeBoard({ postedBy, memberId }) {
 
   return (
     <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notice Board</h2>
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Notice Board</h2>
         {notices.length > 0 && (
-          <button onClick={clearAll} className="text-xs text-red-600 hover:underline">Clear all</button>
+          <button onClick={clearAll} className="text-[11px] sm:text-xs text-red-600 hover:underline">Clear all</button>
         )}
       </div>
-      <div className="p-4 space-y-3">
+      <div className="p-3 sm:p-4 space-y-3">
         {missingTable && (
           <div className="rounded-md bg-yellow-50 p-2 text-sm text-yellow-800">
             Notice table not found. Create a table named "notices" with columns: id (uuid default gen_random_uuid or bigint), text (text), name (text), member_id, created_at (timestamptz default now()).
@@ -313,10 +313,10 @@ function NoticeBoard({ postedBy, memberId }) {
             value={noticeText}
             onChange={(e) => setNoticeText(e.target.value)}
             placeholder="Write a notice..."
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
           />
           <div className="flex items-center justify-end">
-            <button onClick={addNotice} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Post Notice</button>
+            <button onClick={addNotice} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm sm:text-base text-white hover:bg-blue-700">Post Notice</button>
           </div>
         </div>
         <div className="divide-y divide-gray-100 dark:divide-gray-800">

@@ -4,9 +4,9 @@ import { formatDateWithDay } from '../lib/formatters';
 
 function StatCard({ title, value }) {
   return (
-    <div className="rounded-xl bg-white dark:bg-gray-900 p-5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
+    <div className="rounded-xl bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
       <div className="text-sm text-gray-500 dark:text-gray-400">{title}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</div>
+      <div className="mt-2 text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</div>
     </div>
   );
 }
@@ -133,10 +133,10 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               {period.start && period.end ? `Month: ${formatDateWithDay(period.start)} → ${formatDateWithDay(period.end)}` : 'Select a month'}
             </p>
           </div>
@@ -226,15 +226,15 @@ export default function Reports() {
 
             {/* Bazar list (month) */}
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar</h3>
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar</h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <table className="min-w-[640px] divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       {['Date','Member','Item','Cost'].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                        <th key={h} className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -244,15 +244,15 @@ export default function Reports() {
                       .sort((a, b) => new Date(a.date) - new Date(b.date))
                       .map((row) => (
                         <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.item_name ?? row.item ?? row.name ?? '—'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.cost).toFixed(2)} taka</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900">{formatDateWithDay(row.date)}</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{row.item_name ?? row.item ?? row.name ?? '—'}</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{Number(row.cost).toFixed(2)} taka</td>
                         </tr>
                       ))}
                     {bazarMonth.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No bazar entries</td>
+                        <td colSpan={4} className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">No bazar entries</td>
                       </tr>
                     )}
                   </tbody>
@@ -262,34 +262,34 @@ export default function Reports() {
 
             {/* Meal entries (month) - pivot */}
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count</h3>
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count</h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <table className="min-w-[720px] divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                       {membersSorted.map((mem) => (
-                        <th key={mem.id} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{mem.name || mem.email || 'Unnamed'}</th>
+                        <th key={mem.id} className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">{mem.name || mem.email || 'Unnamed'}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {mealPivotMonth.map((row) => (
                       <tr key={row.day} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.day)}</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900">{formatDateWithDay(row.day)}</td>
                         {membersSorted.map((mem) => {
                           const val = row.counts.get(mem.id) || '';
                           return (
-                            <td key={`${row.day}-${mem.id}`} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{val || ''}</td>
+                            <td key={`${row.day}-${mem.id}`} className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{val || ''}</td>
                           );
                         })}
                       </tr>
                     ))}
                     {mealPivotMonth.length === 0 && (
                       <tr>
-                        <td colSpan={1 + membersSorted.length} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No meal entries</td>
+                        <td colSpan={1 + membersSorted.length} className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">No meal entries</td>
                       </tr>
                     )}
                   </tbody>
@@ -299,15 +299,15 @@ export default function Reports() {
 
             {/* Deposits (month) */}
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits</h3>
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits</h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <table className="min-w-[520px] divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       {['Date','Member','Amount'].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                        <th key={h} className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -317,14 +317,14 @@ export default function Reports() {
                       .sort((a, b) => new Date(a.date) - new Date(b.date))
                       .map((row) => (
                         <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatDateWithDay(row.date)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{Number(row.amount).toFixed(2)} taka</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900">{formatDateWithDay(row.date)}</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{memberNameById.get(row.member_id) || '—'}</td>
+                          <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{Number(row.amount).toFixed(2)} taka</td>
                         </tr>
                       ))}
                     {depositsMonth.length === 0 && (
                       <tr>
-                        <td colSpan={3} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No deposit entries</td>
+                        <td colSpan={3} className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">No deposit entries</td>
                       </tr>
                     )}
                   </tbody>
@@ -334,34 +334,34 @@ export default function Reports() {
 
             {/* Ledger (month) */}
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Meal rate: {totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Meal rate: {totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</p>
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <table className="min-w-[680px] divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       {['Member','Meals','Meal Rate','Fair Share','Deposits','Remaining Balance'].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                        <th key={h} className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {ledgerMonth.map((row) => (
                       <tr key={row.memberId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{row.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.meals}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.fairShare.toFixed(2)} taka</td>
-                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{row.deposits.toFixed(2)} taka</td>
-                        <td className={`px-4 py-3 text-sm ${row.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{row.net >= 0 ? '' : '-'}{Math.abs(row.net).toFixed(2)} taka</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">{row.name}</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{row.meals}</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{row.fairShare.toFixed(2)} taka</td>
+                        <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">{row.deposits.toFixed(2)} taka</td>
+                        <td className={`px-3 sm:px-4 py-3 text-xs sm:text-sm ${row.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{row.net >= 0 ? '' : '-'}{Math.abs(row.net).toFixed(2)} taka</td>
                       </tr>) )}
                     {ledgerMonth.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No data</td>
+                        <td colSpan={6} className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">No data</td>
                       </tr>
                     )}
                   </tbody>

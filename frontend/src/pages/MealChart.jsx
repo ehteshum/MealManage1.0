@@ -226,9 +226,9 @@ export default function MealChart() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-wrap items-end gap-3 sm:gap-4">
         <div>
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Dinner date</label>
+          <label className="block text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-1">Dinner date</label>
           <input
             type="date"
             value={dinnerDate}
@@ -237,7 +237,7 @@ export default function MealChart() {
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Lunch date (auto)</label>
+          <label className="block text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-1">Lunch date (auto)</label>
           <input
             type="date"
             value={lunchDate}
@@ -251,52 +251,52 @@ export default function MealChart() {
   {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Chart</h2>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Chart</h2>
         </div>
   <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+          <table className="min-w-[600px] divide-y divide-gray-200 dark:divide-gray-800">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 {['Name','Dinner','Lunch','Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-3 sm:px-4 py-3 text-left text-[11px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {rows.map((r) => (
                 <tr key={r.name} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{r.name}</td>
-                  <td className={`px-4 py-3 text-sm ${r.dinnerLate ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900">{r.name}</td>
+                  <td className={`px-3 sm:px-4 py-3 text-xs sm:text-sm ${r.dinnerLate ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{r.dinner || 0}</span>
                     </div>
                     {r.dinnerLate && r.dinnerTime && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{formatTimeInTZ(r.dinnerTime, 'Asia/Dhaka')}</div>
+                      <div className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">{formatTimeInTZ(r.dinnerTime, 'Asia/Dhaka')}</div>
                     )}
                     {r.dinnerRecDate && (
                       <div className="text-[10px] text-gray-400">from {r.dinnerRecDate}</div>
                     )}
                   </td>
-                  <td className={`px-4 py-3 text-sm ${r.lunchLate ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <td className={`px-3 sm:px-4 py-3 text-xs sm:text-sm ${r.lunchLate ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{r.lunch || 0}</span>
                     </div>
                     {r.lunchLate && r.lunchTime && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{formatTimeInTZ(r.lunchTime, 'Asia/Dhaka')}</div>
+                      <div className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">{formatTimeInTZ(r.lunchTime, 'Asia/Dhaka')}</div>
                     )}
                     {r.lunchRecDate && (
                       <div className="text-[10px] text-gray-400">from {r.lunchRecDate}</div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <div className="flex items-center justify-end gap-3">
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-right">
+                    <div className="flex items-center justify-end gap-2 sm:gap-3">
                       <button
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-[11px] sm:text-xs text-blue-600 hover:underline"
                         onClick={() => openEditModal(r)}
                       >Edit</button>
                       <button
-                        className="text-xs text-red-600 hover:underline"
+                        className="text-[11px] sm:text-xs text-red-600 hover:underline"
                         onClick={() => openDeleteModal(r)}
                       >Delete</button>
                     </div>
@@ -306,16 +306,16 @@ export default function MealChart() {
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 dark:bg-gray-800">
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">Total</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.dinner}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.lunch}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">&nbsp;</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">Total</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.dinner}</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.lunch}</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">&nbsp;</td>
               </tr>
               <tr className="bg-gray-50 dark:bg-gray-800">
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">Total (Dinner + Lunch)</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">—</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.all}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">&nbsp;</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">Total (Dinner + Lunch)</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">—</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">{totals.all}</td>
+                <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">&nbsp;</td>
               </tr>
             </tfoot>
           </table>
