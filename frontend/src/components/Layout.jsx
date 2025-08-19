@@ -23,7 +23,6 @@ export default function Layout() {
   const [displayName, setDisplayName] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   // Change password states
-  const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
@@ -97,18 +96,10 @@ export default function Layout() {
     }
     try {
       setPwSaving(true);
-      // Optional verification of current password
-      if (pwCurrent) {
-        const { error: verifyErr } = await supabase.auth.signInWithPassword({
-          email: user.email,
-          password: pwCurrent,
-        });
-        if (verifyErr) throw new Error('Current password is incorrect.');
-      }
       const { error: upErr } = await supabase.auth.updateUser({ password: pwNew });
       if (upErr) throw upErr;
       setProfileMsg('Password updated successfully.');
-      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+      setPwNew(''); setPwConfirm('');
     } catch (err) {
       setProfileMsg(err.message || 'Failed to update password.');
     } finally {
@@ -238,14 +229,7 @@ export default function Layout() {
               {/* Change password section */}
               <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Change password</h3>
-                <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  <input
-                    type="password"
-                    placeholder="Current (optional)"
-                    value={pwCurrent}
-                    onChange={(e)=>setPwCurrent(e.target.value)}
-                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100"
-                  />
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <input
                     type="password"
                     placeholder="New password"
