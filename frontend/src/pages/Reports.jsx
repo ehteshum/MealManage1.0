@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { formatDateWithDay } from '../lib/formatters';
+import * as XLSX from 'xlsx';
+import Button from '../components/ui/Button';
 
 function StatCard({ title, value }) {
   return (
@@ -128,6 +130,17 @@ export default function Reports() {
     return arr;
   }, [period]);
 
+  // CSV removed; use XLSX export below
+
+  // XLSX helper
+  const downloadXLSX = (filename, sheetName, headers, rows) => {
+    const data = [headers, ...rows.map((r) => headers.map((h) => r[h]))];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Sheet1');
+    XLSX.writeFile(wb, filename);
+  };
+
   
 
   return (
@@ -227,8 +240,27 @@ export default function Reports() {
             {/* Bazar list (month) */}
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar</h3>
-              </div>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Bazar</h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const headers = ['Date','Member','Item','Cost'];
+                        const rowsX = bazarMonth
+                          .slice()
+                          .sort((a, b) => new Date(a.date) - new Date(b.date))
+                          .map(r => ({
+                            Date: r.date,
+                            Member: memberNameById.get(r.member_id) || '',
+                            Item: r.item_name ?? r.item ?? r.name ?? '',
+                            Cost: Number(r.cost).toFixed(2),
+                          }));
+                        downloadXLSX(`bazar-${m.key}.xlsx`, 'Bazar', headers, rowsX);
+                      }}
+                    >Export XLSX</Button>
+                  </div>
+                </div>
               <div className="overflow-x-auto">
                 <table className="min-w-[640px] divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
@@ -264,6 +296,23 @@ export default function Reports() {
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Meal Count</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const headers = ['Date', ...membersSorted.map(mem => mem.name || mem.email || 'Unnamed')];
+                      const rowsX = mealPivotMonth.map(row => {
+                        const obj = { Date: row.day };
+                        for (const mem of membersSorted) {
+                          obj[mem.name || mem.email || 'Unnamed'] = row.counts.get(mem.id) || 0;
+                        }
+                        return obj;
+                      });
+                      downloadXLSX(`meals-${m.key}.xlsx`, 'Meals', headers, rowsX);
+                    }}
+                  >Export XLSX</Button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-[720px] divide-y divide-gray-200 dark:divide-gray-800">
@@ -301,6 +350,24 @@ export default function Reports() {
             <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Deposits</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const headers = ['Date','Member','Amount'];
+                      const rowsX = depositsMonth
+                        .slice()
+                        .sort((a, b) => new Date(a.date) - new Date(b.date))
+                        .map(r => ({
+                          Date: r.date,
+                          Member: memberNameById.get(r.member_id) || '',
+                          Amount: Number(r.amount).toFixed(2),
+                        }));
+                      downloadXLSX(`deposits-${m.key}.xlsx`, 'Deposits', headers, rowsX);
+                    }}
+                  >Export XLSX</Button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-[520px] divide-y divide-gray-200 dark:divide-gray-800">
@@ -338,6 +405,24 @@ export default function Reports() {
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Ledger</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Meal rate: {totalMeals ? `${mealRate.toFixed(4)} taka` : '—'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const headers = ['Member','Meals','Meal Rate','Fair Share','Deposits','Remaining Balance'];
+                      const rowsX = ledgerMonth.map(row => ({
+                        Member: row.name,
+                        Meals: row.meals,
+                        'Meal Rate': totalMeals ? Number(mealRate.toFixed(4)) : '',
+                        'Fair Share': Number(row.fairShare.toFixed(2)),
+                        Deposits: Number(row.deposits.toFixed(2)),
+                        'Remaining Balance': Number(row.net.toFixed(2)),
+                      }));
+                      downloadXLSX(`ledger-${m.key}.xlsx`, 'Ledger', headers, rowsX);
+                    }}
+                  >Export XLSX</Button>
                 </div>
               </div>
               <div className="overflow-x-auto">
