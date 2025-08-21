@@ -135,14 +135,14 @@ export default function MealChart() {
         }
         if (targets.length === 0) throw new Error('Select at least one target');
         for (const t of targets) {
-          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', t.id).single();
+          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', t.id).maybeSingle();
           if (prevErr && !String(prevErr.message || '').toLowerCase().includes('row')) throw prevErr;
           const { data: after, error: upErr } = await supabase
             .from('meals')
             .update({ meal_count: t.val })
             .eq('id', t.id)
             .select()
-            .single();
+            .maybeSingle();
           if (upErr) throw upErr;
           await logAction({ table: 'meals', action: 'update', rowId: t.id, before: prev || null, after, member, source: 'meal_chart' });
         }
@@ -152,7 +152,7 @@ export default function MealChart() {
         if (chooseLunch && modalRow.lunchRecId) ids.push(modalRow.lunchRecId);
         if (ids.length === 0) throw new Error('Select at least one target');
         for (const id of ids) {
-          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', id).single();
+          const { data: prev, error: prevErr } = await supabase.from('meals').select('*').eq('id', id).maybeSingle();
           if (prevErr && !String(prevErr.message || '').toLowerCase().includes('row')) throw prevErr;
           const { error: delErr } = await supabase.from('meals').delete().eq('id', id);
           if (delErr) throw delErr;
